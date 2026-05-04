@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GunToy Market – Súng Đồ Chơi</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0c0f; --bg2: #111318; --bg3: #181c23;
+    --accent: #e8b83a; --accent2: #ff5722;
+    --text: #f0ece0; --muted: #8a8880;
+    --border: rgba(232,184,58,0.2); --card-bg: rgba(24,28,35,0.95);
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 16px; min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(232,184,58,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(255,87,34,0.06) 0%, transparent 60%),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(232,184,58,0.04) 59px, rgba(232,184,58,0.04) 60px),
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(232,184,58,0.04) 59px, rgba(232,184,58,0.04) 60px);
+    pointer-events: none; z-index: 0;
+  }
+  header { position: relative; z-index: 10; padding: 0 2rem; border-bottom: 1px solid var(--border); background: rgba(10,12,15,0.95); backdrop-filter: blur(12px); }
+  .header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+  .logo { font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 900; letter-spacing: 2px; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 32px; height: 32px; background: var(--accent); clip-path: polygon(0 25%, 35% 25%, 35% 0%, 100% 50%, 35% 100%, 35% 75%, 0 75%); }
+  .logo span { color: var(--accent2); }
+  .tagline { font-size: 12px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; }
+
+  /* Setup banner */
+  #setupBanner { position: relative; z-index: 5; background: rgba(255,87,34,0.12); border-bottom: 1px solid rgba(255,87,34,0.3); padding: 0.75rem 2rem; text-align: center; }
+  #setupBanner p { font-size: 13px; color: #ff8a65; letter-spacing: 1px; }
+  #setupBanner a { color: var(--accent); text-decoration: underline; cursor: pointer; }
+  #setupBanner.hidden { display: none; }
+
+  .hero { position: relative; z-index: 1; text-align: center; padding: 4rem 2rem 2rem; }
+  .hero-label { font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 5px; color: var(--accent); text-transform: uppercase; margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Bebas Neue', cursive; font-size: clamp(56px, 8vw, 100px); line-height: 0.9; color: var(--text); letter-spacing: 4px; margin-bottom: 0.5rem; }
+  .hero h1 em { color: var(--accent); font-style: normal; display: block; }
+  .hero-sub { font-size: 15px; color: var(--muted); letter-spacing: 1px; margin-top: 1rem; }
+
+  .main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+  @media (max-width: 768px) { .main { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; position: relative; }
+  .panel-header { background: rgba(232,184,58,0.1); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 10px; }
+  .panel-header-dot { width: 8px; height: 8px; background: var(--accent); transform: rotate(45deg); }
+  .panel-title { font-family: 'Orbitron', monospace; font-size: 13px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; }
+  .panel-body { padding: 1.75rem 1.5rem; }
+
+  .field { margin-bottom: 1.4rem; }
+  label { display: block; font-size: 12px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 0.5rem; font-weight: 600; }
+  input, textarea, select { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(232,184,58,0.25); border-radius: 2px; color: var(--text); font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600; padding: 0.7rem 1rem; transition: border-color 0.2s, background 0.2s; outline: none; }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); background: rgba(232,184,58,0.06); }
+  input::placeholder, textarea::placeholder { color: rgba(138,136,128,0.5); font-weight: 400; }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+  select option { background: #1a1e27; color: var(--text); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .submit-btn { width: 100%; padding: 0.9rem; background: var(--accent); color: #0a0c0f; border: none; border-radius: 2px; font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: background 0.2s, transform 0.1s; margin-top: 0.5rem; }
+  .submit-btn:hover { background: #f5c842; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { background: #555; cursor: not-allowed; }
+
+  /* Toast */
+  #toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 999; background: var(--accent); color: #0a0c0f; font-family: 'Orbitron', monospace; font-size: 12px; letter-spacing: 2px; padding: 0.75rem 1.5rem; border-radius: 3px; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.error { background: var(--accent2); color: #fff; }
+
+  /* Setup modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; max-width: 580px; width: 100%; padding: 2rem; }
+  .modal h2 { font-family: 'Orbitron', monospace; font-size: 16px; color: var(--accent); letter-spacing: 3px; margin-bottom: 0.5rem; }
+  .modal p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 1rem; }
+  .modal ol { padding-left: 1.25rem; margin-bottom: 1.25rem; }
+  .modal ol li { font-size: 14px; color: var(--text); line-height: 1.8; margin-bottom: 0.4rem; }
+  .modal ol li code { background: rgba(232,184,58,0.1); color: var(--accent); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  .modal .url-field { display: flex; gap: 8px; margin-top: 1rem; }
+  .modal .url-field input { flex: 1; }
+  .modal .url-field button { padding: 0 1.2rem; background: var(--accent); color: #0a0c0f; border: none; border-radius: 2px; font-family: 'Orbitron', monospace; font-size: 11px; letter-spacing: 1px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .modal .url-field button:hover { background: #f5c842; }
+  .modal-close { float: right; background: none; border: 1px solid var(--border); color: var(--muted); padding: 4px 12px; border-radius: 2px; cursor: pointer; font-size: 12px; margin-top: -4px; }
+  .modal-close:hover { color: var(--text); }
+  .script-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(232,184,58,0.15); border-radius: 3px; padding: 0.75rem 1rem; margin: 0.75rem 0; font-family: monospace; font-size: 12px; color: #aaa; line-height: 1.6; white-space: pre-wrap; word-break: break-all; max-height: 160px; overflow-y: auto; }
+  .copy-btn { font-size: 11px; background: rgba(232,184,58,0.1); border: 1px solid var(--border); color: var(--accent); padding: 3px 10px; border-radius: 2px; cursor: pointer; margin-bottom: 0.75rem; }
+  .copy-btn:hover { background: rgba(232,184,58,0.2); }
+
+  /* Listings */
+  .listings-section { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto 2rem; padding: 0 2rem; }
+  .section-title { font-family: 'Orbitron', monospace; font-size: 13px; letter-spacing: 4px; color: var(--accent); text-transform: uppercase; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+  .listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+
+  .listing-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; position: relative; }
+  .listing-card:hover { border-color: rgba(232,184,58,0.5); transform: translateY(-2px); }
+  .listing-img { height: 130px; background: linear-gradient(135deg, #131720, #1a2030); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+  .listing-img-label { font-family: 'Bebas Neue', cursive; font-size: 48px; color: rgba(232,184,58,0.12); letter-spacing: 3px; }
+  .listing-body { padding: 1rem 1.25rem; }
+  .listing-name { font-family: 'Bebas Neue', cursive; font-size: 24px; color: var(--text); letter-spacing: 2px; margin-bottom: 2px; }
+  .listing-type { font-size: 11px; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 6px; }
+  .listing-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .listing-footer { display: flex; align-items: center; justify-content: space-between; }
+  .listing-price { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; color: var(--accent); }
+  .listing-seller { font-size: 12px; color: var(--muted); }
+  .new-badge { position: absolute; top: 8px; left: 8px; background: var(--accent2); color: #fff; font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px; padding: 3px 8px; border-radius: 2px; text-transform: uppercase; }
+
+  .loading-state { text-align: center; padding: 3rem; color: var(--muted); font-family: 'Orbitron', monospace; font-size: 12px; letter-spacing: 3px; }
+  .empty-listings { text-align: center; padding: 3rem; color: var(--muted); font-size: 14px; border: 1px dashed rgba(232,184,58,0.15); border-radius: 4px; }
+
+  .corner-deco { position: absolute; top: 0; right: 0; width: 80px; height: 80px; border-top: 1px solid var(--accent); border-right: 1px solid var(--accent); opacity: 0.3; pointer-events: none; }
+
+  footer { position: relative; z-index: 1; text-align: center; padding: 2rem; border-top: 1px solid var(--border); margin-top: 2rem; font-size: 12px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!-- Setup Banner -->
+<div id="setupBanner">
+  <p>⚠ Chưa cấu hình Google Sheets — dữ liệu chỉ lưu tạm thời. <a onclick="openSetup()">Bấm đây để cài đặt →</a></p>
+</div>
+
+<!-- Setup Modal -->
+<div class="modal-overlay hidden" id="setupModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeSetup()">✕ Đóng</button>
+    <h2>⚙ CÀI ĐẶT GOOGLE SHEETS</h2>
+    <p>Làm theo 4 bước dưới đây — chỉ cần làm 1 lần duy nhất:</p>
+    <ol>
+      <li>Vào <strong>script.google.com</strong> → Bấm <code>+ Dự án mới</code></li>
+      <li>Xóa code cũ, dán đoạn script bên dưới vào:</li>
+    </ol>
+    <div class="script-box" id="scriptCode"></div>
+    <button class="copy-btn" onclick="copyScript()">📋 Sao chép script</button>
+    <ol start="3">
+      <li>Bấm <code>Triển khai → Triển khai mới</code> → Chọn <code>Ứng dụng web</code> → Ai cũng có thể truy cập → Bấm <code>Triển khai</code></li>
+      <li>Sao chép URL triển khai, dán vào ô bên dưới:</li>
+    </ol>
+    <div class="url-field">
+      <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/..." />
+      <button onclick="saveScriptUrl()">LƯU & KẾT NỐI</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <div class="logo-icon"></div>
+      GUN<span>TOY</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <div class="tagline">Chợ Súng Đồ Chơi #1</div>
+      <button onclick="openSetup()" style="background:rgba(232,184,58,0.1);border:1px solid var(--border);color:var(--accent);padding:5px 12px;border-radius:2px;font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;">⚙ CÀI ĐẶT</button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <p class="hero-label">// Nền tảng mua bán uy tín</p>
+  <h1>SÚNG<em>ĐỒ CHƠI</em></h1>
+  <p class="hero-sub">Đăng tin nhanh · Dữ liệu chung · Kết nối người mua toàn quốc</p>
+</section>
+
+<div class="main">
+  <!-- Form -->
+  <div class="panel">
+    <div class="corner-deco"></div>
+    <div class="panel-header">
+      <div class="panel-header-dot"></div>
+      <span class="panel-title">Đăng Tin Bán Hàng</span>
+    </div>
+    <div class="panel-body">
+      <div class="field">
+        <label>Tên Súng *</label>
+        <input type="text" id="gunName" placeholder="VD: Desert Eagle M9, AK-47 Toy..." />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Loại Súng *</label>
+          <select id="gunType">
+            <option value="">-- Chọn loại --</option>
+            <option>Súng Nước</option>
+            <option>Súng Bắn Đạn Xốp</option>
+            <option>Súng Laser</option>
+            <option>Súng Bắn Đạn Gel</option>
+            <option>Súng Điện Tử</option>
+            <option>Súng Lục Đồ Chơi</option>
+            <option>Súng Trường Mini</option>
+            <option>Khác</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Giá Bán (VNĐ) *</label>
+          <input type="number" id="gunPrice" placeholder="VD: 150000" min="0" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Tình Trạng *</label>
+          <select id="gunCondition">
+            <option value="">-- Chọn --</option>
+            <option>Mới 100%</option>
+            <option>Mới 99% (còn seal)</option>
+            <option>Like New</option>
+            <option>Đã Qua Sử Dụng</option>
+            <option>Cần Sửa</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Địa Điểm *</label>
+          <input type="text" id="gunLocation" placeholder="VD: Hà Nội, TP.HCM..." />
+        </div>
+      </div>
+      <div class="field">
+        <label>Mô Tả Chi Tiết *</label>
+        <textarea id="gunDesc" placeholder="Chất liệu, màu sắc, phụ kiện, lý do bán..."></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Tên Người Bán *</label>
+          <input type="text" id="sellerName" placeholder="Họ và tên..." />
+        </div>
+        <div class="field">
+          <label>Số Điện Thoại</label>
+          <input type="tel" id="sellerPhone" placeholder="0987 654 321" />
+        </div>
+      </div>
+      <button class="submit-btn" id="submitBtn" onclick="submitListing()">▸ &nbsp; ĐĂNG TIN NGAY</button>
+    </div>
+  </div>
+
+  <!-- Info panel -->
+  <div class="panel" style="border-color:rgba(232,184,58,0.1);">
+    <div class="panel-header">
+      <div class="panel-header-dot" style="background:var(--accent2)"></div>
+      <span class="panel-title" style="color:var(--accent2);">Hướng Dẫn</span>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-bottom:1rem;">Trang web này dùng <strong style="color:var(--text)">Google Sheets</strong> làm kho dữ liệu chung — mọi người đăng tin đều hiện cho tất cả xem.</p>
+      <div style="background:rgba(232,184,58,0.06);border:1px solid rgba(232,184,58,0.15);border-radius:3px;padding:1rem;margin-bottom:1rem;">
+        <p style="font-size:12px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:0.5rem;">Trạng thái kết nối</p>
+        <p style="font-size:14px;font-weight:600;" id="connectionStatus">⏳ Chưa kết nối Google Sheets</p>
+      </div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;">Bấm nút <strong style="color:var(--accent)">⚙ CÀI ĐẶT</strong> ở góc trên phải để kết nối Google Sheets và bật tính năng lưu dữ liệu chung.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Listings -->
+<div class="listings-section">
+  <div class="section-title">Tin Đăng Mới Nhất</div>
+  <div id="listingsGrid" class="listings-grid">
+    <div class="loading-state" style="grid-column:1/-1;">⏳ ĐANG TẢI...</div>
+  </div>
+</div>
+
+<footer>&copy; 2025 GunToy Market &nbsp;·&nbsp; Súng đồ chơi an toàn cho mọi lứa tuổi</footer>
+
+<div id="toast"></div>
+
+<script>
+// ===== CONFIG =====
+const SCRIPT_URL_KEY = 'guntoy_script_url';
+let SCRIPT_URL = localStorage.getItem(SCRIPT_URL_KEY) || '';
+
+const APPS_SCRIPT_CODE = `function doGet(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Listings') || ss.insertSheet('Listings');
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['ID','Tên Súng','Loại','Giá','Tình Trạng','Địa Điểm','Mô Tả','Người Bán','SĐT','Thời Gian']);
+  }
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var rows = data.slice(1).map(function(row) {
+    var obj = {};
+    headers.forEach(function(h, i) { obj[h] = row[i]; });
+    return obj;
+  }).reverse();
+  return ContentService.createTextOutput(JSON.stringify({status:'ok', data:rows}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Listings') || ss.insertSheet('Listings');
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['ID','Tên Súng','Loại','Giá','Tình Trạng','Địa Điểm','Mô Tả','Người Bán','SĐT','Thời Gian']);
+  }
+  var d = JSON.parse(e.postData.contents);
+  var id = 'GT-' + Date.now();
+  sheet.appendRow([id, d.ten, d.loai, d.gia, d.tinh_trang, d.dia_diem, d.mo_ta, d.nguoi_ban, d.sdt, new Date().toLocaleString('vi-VN')]);
+  return ContentService.createTextOutput(JSON.stringify({status:'ok', id:id}))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+document.getElementById('scriptCode').textContent = APPS_SCRIPT_CODE;
+
+// ===== SETUP =====
+function openSetup() { document.getElementById('setupModal').classList.remove('hidden'); }
+function closeSetup() { document.getElementById('setupModal').classList.add('hidden'); }
+function copyScript() {
+  navigator.clipboard.writeText(APPS_SCRIPT_CODE);
+  showToast('✓ Đã sao chép script!');
+}
+function saveScriptUrl() {
+  const url = document.getElementById('scriptUrlInput').value.trim();
+  if (!url.includes('script.google.com')) { showToast('URL không hợp lệ!', true); return; }
+  SCRIPT_URL = url;
+  localStorage.setItem(SCRIPT_URL_KEY, url);
+  updateConnectionStatus();
+  closeSetup();
+  document.getElementById('setupBanner').classList.add('hidden');
+  loadListings();
+  showToast('✓ Kết nối thành công!');
+}
+
+function updateConnectionStatus() {
+  const el = document.getElementById('connectionStatus');
+  if (SCRIPT_URL) {
+    el.textContent = '✅ Đã kết nối Google Sheets';
+    el.style.color = '#4caf50';
+    document.getElementById('setupBanner').classList.add('hidden');
+  } else {
+    el.textContent = '⏳ Chưa kết nối Google Sheets';
+    el.style.color = 'var(--muted)';
+  }
+}
+
+// ===== TOAST =====
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = '', 3000);
+}
+
+// ===== FORMAT =====
+function formatPrice(v) {
+  const n = parseInt(v, 10);
+  return isNaN(n) ? '0' : n.toLocaleString('vi-VN');
+}
+
+// ===== LOCAL LISTINGS =====
+let localListings = [];
+
+function renderCard(item, isNew) {
+  const abbr = (item['Tên Súng'] || item.ten || '').split(' ').slice(0,2).join(' ').toUpperCase().slice(0,6);
+  const name = item['Tên Súng'] || item.ten || '';
+  const type = item['Loại'] || item.loai || '';
+  const price = item['Giá'] || item.gia || 0;
+  const desc = item['Mô Tả'] || item.mo_ta || '';
+  const seller = item['Người Bán'] || item.nguoi_ban || '';
+  const loc = item['Địa Điểm'] || item.dia_diem || '';
+  const time = item['Thời Gian'] || '';
+
+  return `<div class="listing-card">
+    ${isNew ? '<div class="new-badge">MỚI</div>' : ''}
+    <div class="listing-img"><span class="listing-img-label">${abbr}</span></div>
+    <div class="listing-body">
+      <div class="listing-name">${name.toUpperCase()}</div>
+      <div class="listing-type">${type}</div>
+      <div class="listing-desc">${desc}</div>
+      <div class="listing-footer">
+        <span class="listing-price">${formatPrice(price)}đ</span>
+        <span class="listing-seller">${seller} · ${loc}</span>
+      </div>
+      ${time ? `<div style="font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:1px;">${time}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+// ===== LOAD LISTINGS =====
+async function loadListings() {
+  const grid = document.getElementById('listingsGrid');
+  if (!SCRIPT_URL) {
+    // Show sample data
+    grid.innerHTML = `
+      <div class="listing-card">
+        <div class="new-badge">MẪU</div>
+        <div class="listing-img"><span class="listing-img-label">M4A1</span></div>
+        <div class="listing-body">
+          <div class="listing-name">M4A1 SOPMOD</div>
+          <div class="listing-type">Súng Bắn Đạn Xốp</div>
+          <div class="listing-desc">Súng đồ chơi M4A1 tỉ lệ 1:1, kèm 2 băng đạn và ốp ngắm.</div>
+          <div class="listing-footer"><span class="listing-price">280,000đ</span><span class="listing-seller">Minh Tuấn · HN</span></div>
+        </div>
+      </div>
+      <div class="listing-card">
+        <div class="listing-img"><span class="listing-img-label">GLOCK</span></div>
+        <div class="listing-body">
+          <div class="listing-name">GLOCK 17 TOY</div>
+          <div class="listing-type">Súng Lục Đồ Chơi</div>
+          <div class="listing-desc">Có âm thanh và đèn LED khi bắn. Thích hợp trẻ 8+.</div>
+          <div class="listing-footer"><span class="listing-price">95,000đ</span><span class="listing-seller">Lan Anh · HCM</span></div>
+        </div>
+      </div>
+      <div style="grid-column:1/-1;text-align:center;padding:1.5rem;border:1px dashed rgba(232,184,58,0.15);border-radius:4px;color:var(--muted);font-size:13px;">
+        ☝ Đây là dữ liệu mẫu. Cài đặt Google Sheets để xem tin đăng thật từ mọi người.
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = '<div class="loading-state" style="grid-column:1/-1;">⏳ ĐANG TẢI DỮ LIỆU...</div>';
+  try {
+    const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
+    const json = await res.json();
+    if (json.status === 'ok') {
+      const items = json.data;
+      if (items.length === 0) {
+        grid.innerHTML = '<div class="empty-listings" style="grid-column:1/-1;">Chưa có tin đăng nào. Hãy là người đầu tiên!</div>';
+      } else {
+        grid.innerHTML = items.map((item, i) => renderCard(item, i === 0)).join('');
+      }
+    }
+  } catch(e) {
+    grid.innerHTML = '<div class="empty-listings" style="grid-column:1/-1;">⚠ Không tải được dữ liệu. Kiểm tra lại URL script.</div>';
+  }
+}
+
+// ===== SUBMIT =====
+async function submitListing() {
+  const name = document.getElementById('gunName').value.trim();
+  const type = document.getElementById('gunType').value;
+  const price = document.getElementById('gunPrice').value;
+  const condition = document.getElementById('gunCondition').value;
+  const location = document.getElementById('gunLocation').value.trim();
+  const desc = document.getElementById('gunDesc').value.trim();
+  const seller = document.getElementById('sellerName').value.trim();
+  const phone = document.getElementById('sellerPhone').value.trim();
+
+  if (!name || !type || !price || !condition || !location || !desc || !seller) {
+    showToast('⚠ Vui lòng điền đủ các trường có *', true);
+    return;
+  }
+
+  const data = { ten: name, loai: type, gia: price, tinh_trang: condition, dia_diem: location, mo_ta: desc, nguoi_ban: seller, sdt: phone };
+
+  if (!SCRIPT_URL) {
+    // Local only
+    localListings.unshift(data);
+    const grid = document.getElementById('listingsGrid');
+    const oldSamples = grid.querySelector('[style*="grid-column"]');
+    if (oldSamples) oldSamples.remove();
+    grid.insertAdjacentHTML('afterbegin', renderCard(data, true));
+    showToast('✓ Đã đăng! (Chỉ hiện tạm thời — cài Google Sheets để lưu vĩnh viễn)');
+    resetForm();
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ ĐANG GỬI...';
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    showToast('✓ Đăng tin thành công! Mọi người đều thấy được.');
+    resetForm();
+    setTimeout(loadListings, 1500);
+  } catch(e) {
+    showToast('⚠ Lỗi kết nối. Thử lại!', true);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '▸ &nbsp; ĐĂNG TIN NGAY';
+}
+
+function resetForm() {
+  ['gunName','gunType','gunPrice','gunCondition','gunLocation','gunDesc','sellerName','sellerPhone'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+// ===== INIT =====
+if (SCRIPT_URL) document.getElementById('scriptUrlInput').value = SCRIPT_URL;
+updateConnectionStatus();
+loadListings();
+setInterval(() => { if (SCRIPT_URL) loadListings(); }, 30000);
+</script>
+</body>
+</html>
